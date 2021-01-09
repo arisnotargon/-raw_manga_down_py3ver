@@ -41,14 +41,16 @@ class RawMangaDownLoader():
         content = brotli.decompress(response.read()).decode('UTF-8')
 
         soup = BeautifulSoup(content, features='html.parser')
-        if not os.path.exists( os.path.join(os.path.curdir, 'out_put')):
-            os.mkdir( os.path.join(os.path.curdir, 'out_put'))
-        mangaTitle = soup.find(class_='post-title').h1.string.strip()
-        mangaTitle = re.sub("[\/\\\:\*\?\"\<\>\|\s+]", "_", mangaTitle)
-        mangaPath = os.path.join(os.path.curdir, 'out_put', mangaTitle)
+        basePath = os.path.join(os.path.curdir, 'out_put')
+        if not os.path.exists(basePath):
+            os.mkdir(basePath)
+
+        mangaTitle = soup.find(class_='post-title').h1.get_text().strip()
+        mangaTitle = re.sub("[\/\\\:\*\?\"\<\>\|\s]+", "_", mangaTitle)
+        mangaPath = os.path.join(basePath, mangaTitle)
         downLoadPool = multiprocessing.Pool()
 
-        if not os.path.exists(mangaTitle):
+        if not os.path.exists(mangaPath):
             os.mkdir(mangaPath)
 
         chapters = soup.find_all(class_="wp-manga-chapter")
@@ -117,6 +119,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     url = args.url
     proxy = args.proxy
+
+    # url = 'https://rawmangas.net/manga/youkoso-jitsuryoku-shijou-shugi-no-kyoushitsu-e-raw/'
+    # proxy = None
 
     downLoader = RawMangaDownLoader(url, proxy)
     downLoader.run()
